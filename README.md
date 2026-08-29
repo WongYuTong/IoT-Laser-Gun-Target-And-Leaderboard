@@ -10,6 +10,8 @@
 *   5V 雷射模組
 *   紙箱與鋁箔紙
 *   杜邦線
+<img width="2400" height="1350" alt="image" src="https://github.com/user-attachments/assets/3beca17e-004e-4a88-acb3-e0252ce27890" />
+<img width="2400" height="1350" alt="image" src="https://github.com/user-attachments/assets/50bc4b36-23e7-46dd-a617-0fabf8db06d3" />
 
 **雷射標靶材料**
 *   NodeMCU-32S 開發板
@@ -21,12 +23,16 @@
 *   TM1637 七段顯示器 (顯示遊戲倒數時間)
 *   實體按鈕 (啟動/重置遊戲)
 *   麵包板、杜邦線、紙箱與木筷
+<img width="2400" height="1350" alt="image" src="https://github.com/user-attachments/assets/99fd5291-8f50-4425-a5c8-f52f6c3bba79" />
 
 ## ⚙️ 系統運作原理
 *   **雷射槍觸發機制**：透過壓下紙箱製的板機時，讓插在 Arduino mini pro GND 孔的杜邦線，觸碰到電池座負極上的鋁箔紙使電路導通，進而觸發 5V 雷射模組發射雷射光。
 *   **標靶互動與計分**：NodeMCU-32S 透過 `machine` 模組控制硬體。遊戲啟動後限時 15 秒 (TM1637 顯示倒數)。當雷射光擊中光敏感測器，蜂鳴器會發出提示音，伺服馬達會帶動標靶向後倒 90 度再彈回，同時總分加 1 分並即時顯示於 OLED 螢幕上。
 *   **分數上傳與資料庫儲存**：遊戲結束後，系統會透過 `urequests` 模組將帶有分數的 JSON 資料使用 HTTP POST 傳送至 Node-RED。Node-RED 接收後回傳 HTTP 200 狀態，並將資料進行時差處理 (+8 小時) 後存入 MySQL 資料庫 (`scorelist` 資料庫中的 `leaderboard` 資料表)。
 *   **線上排行榜**：Node-RED 設定每 1 秒定期 (Inject) 向資料庫查詢前十名最高分紀錄 (ORDER BY score DESC LIMIT 10)，將撈取出的資料格式化後，傳送至 Dashboard 2.0 的 UI Template 節點呈現即時排名。
+<img width="2400" height="1350" alt="image" src="https://github.com/user-attachments/assets/8f573693-89b7-4785-ab19-1f6970265cb5" />
+<img width="2400" height="1350" alt="image" src="https://github.com/user-attachments/assets/fa8fd917-4f5a-4d0e-b175-f2ed11e5a96a" />
+<img width="2400" height="1350" alt="image" src="https://github.com/user-attachments/assets/74a6fa37-f163-4070-ac73-ee6dfa46efe7" />
 
 ## 💻 程式碼引用模組 (MicroPython)
 *   `machine`：控制硬體 GPIO、PWM (伺服馬達/蜂鳴器) 和 ADC (光敏感測器) 等功能。
