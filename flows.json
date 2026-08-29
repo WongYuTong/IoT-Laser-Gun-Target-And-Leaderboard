@@ -1,0 +1,283 @@
+[
+    {
+        "id": "b49b08f9bc74e495",
+        "type": "tab",
+        "label": "流程1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "65eeb6c3a65d2f2a",
+        "type": "http in",
+        "z": "b49b08f9bc74e495",
+        "name": "Receive Score",
+        "url": "/score",
+        "method": "post",
+        "upload": true,
+        "swaggerDoc": "",
+        "x": 140,
+        "y": 220,
+        "wires": [
+            [
+                "2fb17c47ffa429f9"
+            ]
+        ]
+    },
+    {
+        "id": "2fb17c47ffa429f9",
+        "type": "json",
+        "z": "b49b08f9bc74e495",
+        "name": "Parse JSON",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 340,
+        "y": 220,
+        "wires": [
+            [
+                "5cc1aa85f1c6bbf0",
+                "0881d12a9703337c"
+            ]
+        ]
+    },
+    {
+        "id": "5cc1aa85f1c6bbf0",
+        "type": "function",
+        "z": "b49b08f9bc74e495",
+        "name": "Prepare SQL Insert",
+        "func": "msg.topic = \"INSERT INTO leaderboard (score, play_time) VALUES (?, ?)\";\nmsg.payload = [\n    parseInt(msg.payload.score) || 0,  // 分數默認為0（若未提供）\n    (function() {\n        let currentDate = new Date();\n        currentDate.setHours(currentDate.getHours() + 8);  // 調整時間 +8 小時（台灣時區）\n\n        // 判斷加 8 小時後的時間是否大於或等於 24 小時\n        if (currentDate.getHours() >= 24) {\n            currentDate.setDate(currentDate.getDate() + 1);  // 如果超過 24 小時，將日期加一天\n            currentDate.setHours(currentDate.getHours() - 24);  // 讓小時數重新計算為 0 到 23 小時\n        }\n\n        return currentDate.toISOString().slice(0, 19).replace('T', ' ');  // 當前時間\n    })()\n];\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 220,
+        "wires": [
+            [
+                "516f337c4776fe70"
+            ]
+        ]
+    },
+    {
+        "id": "516f337c4776fe70",
+        "type": "mysql",
+        "z": "b49b08f9bc74e495",
+        "mydb": "c7ad5bc9b0c75f9f",
+        "name": "Insert Score",
+        "x": 740,
+        "y": 220,
+        "wires": [
+            [
+                "dde80dcd874f7f7a"
+            ]
+        ]
+    },
+    {
+        "id": "dde80dcd874f7f7a",
+        "type": "debug",
+        "z": "b49b08f9bc74e495",
+        "name": "Debug Insert",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 940,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "8faf3606b54c93bd",
+        "type": "inject",
+        "z": "b49b08f9bc74e495",
+        "name": "Inject every 1 seconds",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "SELECT id, score, play_time FROM leaderboard ORDER BY score DESC LIMIT 10;",
+        "x": 150,
+        "y": 340,
+        "wires": [
+            [
+                "5142f5904c02bfca"
+            ]
+        ]
+    },
+    {
+        "id": "5142f5904c02bfca",
+        "type": "mysql",
+        "z": "b49b08f9bc74e495",
+        "mydb": "c7ad5bc9b0c75f9f",
+        "name": "Query High Scores",
+        "x": 390,
+        "y": 340,
+        "wires": [
+            [
+                "f8c2dc0d0916d410"
+            ]
+        ]
+    },
+    {
+        "id": "f8c2dc0d0916d410",
+        "type": "function",
+        "z": "b49b08f9bc74e495",
+        "name": "Format Scores and Time",
+        "func": "let topScores = msg.payload;\nlet formattedText = 'Top 10 Scores:\\n';  // 添加標題並換行\n\nfor (let i = 0; i < topScores.length; i++) {\n    let score = topScores[i].score;\n    let playTime = new Date(topScores[i].play_time).toLocaleString('en-TW', { timeZone: 'Asia/Taipei' });\n    formattedText += `${i + 1}. Score: ${score} | Play Time: ${playTime}\\n`; // 每條數據後加換行\n}\n\nmsg.payload = formattedText;  // 傳遞格式化後的文本\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 340,
+        "wires": [
+            [
+                "d011ac6e0153bc23"
+            ]
+        ]
+    },
+    {
+        "id": "d011ac6e0153bc23",
+        "type": "ui-template",
+        "z": "b49b08f9bc74e495",
+        "group": "7b7d7d83dcacd127",
+        "page": "",
+        "ui": "",
+        "name": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<style>\n    /* 設定 Ranking 區塊的樣式 */\n    div[style*=\"text-align:center;\"] {\n        width: 80% !important;           /* 調整寬度 */\n        height: 400px !important;        /* 調整高度 */\n        margin: 0 auto !important;       /* 置中 */\n        background-color: #f0f8ff;       /* 設定背景顏色 */\n        border-radius: 10px;             /* 設定圓角 */\n        padding: 20px;                   /* 調整內邊距，讓區塊看起來更大 */\n        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* 設定陰影效果 */\n    }\n\n    /* 你可以調整標題樣式 */\n    p {\n        font-size: 32px;\n        font-weight: bold;\n        color: #15617e;\n    }\n\n    /* 設定排名資料的樣式 */\n    pre {\n        font-size: 24px;                /* 設定字體大小 */\n        line-height: 1.8;               /* 增加行距 */\n        white-space: pre-wrap;\n        word-wrap: break-word;\n    }\n</style>\n\n<div style=\"text-align:center; font-size: 24px; font-weight: bold; color: #15617e;\">\n    <p>Ranking 🏆🎯</p>  <!-- 顯示 \"Top 10 Scores\" 標題 -->\n    <pre style=\"font-size: 24px; line-height: 1.8; white-space: pre-wrap; word-wrap: break-word;\">{{msg.payload}}</pre>  <!-- 顯示排名資料 -->\n</div>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 860,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0881d12a9703337c",
+        "type": "http response",
+        "z": "b49b08f9bc74e495",
+        "name": "",
+        "statusCode": "200",
+        "headers": {},
+        "x": 520,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "c7ad5bc9b0c75f9f",
+        "type": "MySQLdatabase",
+        "name": "",
+        "host": "127.0.0.1",
+        "port": "3307",
+        "db": "scorelist",
+        "tz": "",
+        "charset": "UTF8"
+    },
+    {
+        "id": "7b7d7d83dcacd127",
+        "type": "ui-group",
+        "name": "Ranking",
+        "page": "1e18fc094d0baa5f",
+        "width": "20",
+        "height": "1",
+        "order": 1,
+        "showTitle": false,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "1e18fc094d0baa5f",
+        "type": "ui-page",
+        "name": "Home",
+        "ui": "846487008d63e22c",
+        "path": "/page1",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "9d8bfd7e0d216779",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": true,
+        "disabled": false
+    },
+    {
+        "id": "846487008d63e22c",
+        "type": "ui-base",
+        "name": "UI Name",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "showPageTitle": true,
+        "navigationStyle": "default",
+        "titleBarStyle": "default"
+    },
+    {
+        "id": "9d8bfd7e0d216779",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#ffffff",
+            "primary": "#15617e",
+            "bgPage": "#eeeeee",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "pagePadding": "48px",
+            "groupGap": "48px",
+            "groupBorderRadius": "48px",
+            "widgetGap": "48px",
+            "density": "default"
+        }
+    }
+]
