@@ -31,8 +31,8 @@
 *   **分數上傳與資料庫儲存**：遊戲結束後，系統會透過 `urequests` 模組將帶有分數的 JSON 資料使用 HTTP POST 傳送至 Node-RED。Node-RED 接收後回傳 HTTP 200 狀態，並將資料進行時差處理 (+8 小時) 後存入 MySQL 資料庫 (`scorelist` 資料庫中的 `leaderboard` 資料表)。
 *   **線上排行榜**：Node-RED 設定每 1 秒定期 (Inject) 向資料庫查詢前十名最高分紀錄 (ORDER BY score DESC LIMIT 10)，將撈取出的資料格式化後，傳送至 Dashboard 2.0 的 UI Template 節點呈現即時排名。
 <img width="2400" height="1350" alt="image" src="https://github.com/user-attachments/assets/8f573693-89b7-4785-ab19-1f6970265cb5" />
-<img width="2400" height="1350" alt="image" src="https://github.com/user-attachments/assets/fa8fd917-4f5a-4d0e-b175-f2ed11e5a96a" />
 <img width="2400" height="1350" alt="image" src="https://github.com/user-attachments/assets/74a6fa37-f163-4070-ac73-ee6dfa46efe7" />
+<img width="2400" height="1350" alt="image" src="https://github.com/user-attachments/assets/fa8fd917-4f5a-4d0e-b175-f2ed11e5a96a" />
 
 ## 💻 程式碼引用模組 (MicroPython)
 *   `machine`：控制硬體 GPIO、PWM (伺服馬達/蜂鳴器) 和 ADC (光敏感測器) 等功能。
