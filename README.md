@@ -53,3 +53,4 @@
 ## 📚 參考文獻
 *   [Node-RED Dashboard 2 UI Template Widget](https://dashboard.flowfuse.com/nodes/widgets/ui-template.html)
 *   [Node-RED Dashboard 2.0: Layout, Navigation & Styling](https://flowfuse.com/blog/2024/05/node-red-dashboard-2-layout-navigation-styling/)
+*   [簡報模板](https://www.slidescarnival.com/template/company-internal-deck/151544)
